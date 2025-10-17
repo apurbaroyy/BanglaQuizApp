@@ -1,5 +1,3 @@
----
-
 ## 🔗 Submission Links
 
 | বিষয় | লিংক |
@@ -8,9 +6,8 @@
 | 🌍 **Outsourcing Profile (Upwork)** | [https://www.upwork.com/nx/create-profile/skills](https://www.upwork.com/nx/create-profile/skills) |
 | 💼 **LinkedIn Profile** | [https://www.linkedin.com/in/apurba-chandra-roy-046976300/](https://www.linkedin.com/in/apurba-chandra-roy-046976300/) |
 
----
+### 👨‍💻 Developer Information
 
-🧠 *এই প্রজেক্টটি তৈরি করেছেন:*  
-**👨‍💻 Apurba Chandra Roy**  
-📧 Email: [apurbaroy31@gmail.com](mailto:apurbaroy31@gmail.com)  
-🌐 GitHub: [@apurbaroyy](https://github.com/apurbaroyy)
+**Name:** Apurba Chandra Roy  
+**Email:** [apurbaroy31@gmail.com](mailto:apurbaroy31@gmail.com)  
+**GitHub:** [@apurbaroyy](https://github.com/apurbaroyy)
