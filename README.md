@@ -1,9 +1,7 @@
 ## 🔗 Submission Links
 
 | বিষয় | লিংক 
-| 📦 **GitHub Project Repository** | [https://github.com/apurbaroyy/BanglaQuizApp](https://github.com/apurbaroyy/BanglaQuizApp) |
-
-| 💼 **LinkedIn Profile** | [https://www.linkedin.com/in/apurba-chandra-roy-046976300/](https://www.linkedin.com/in/apurba-chandra-roy-046976300/) |
+| 📦 **GitHub Project Repository** | [https://github.com/apurbaroyy/BanglaQuizApp](https://github.com/apurbaroyy/BanglaQuizApp) | |
 
 ### 👨‍💻 Developer Information
 
