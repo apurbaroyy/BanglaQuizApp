@@ -1,85 +1,179 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
-import java.util.Scanner;
 
-public class QuizApplication {
+public class ApurbaBanglaQuize extends JFrame {
 
+    // ✅ Database Connection Info
     private static final String DB_URL = "jdbc:mysql://localhost:3306/quizdb";
     private static final String USER = "apurba31";
     private static final String PASS = "apurbaict";
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    // ✅ Quiz Data
+    private final String[] questions = {
+            "প্রশ্ন ১: 2 + 2 কত?",
+            "প্রশ্ন ২: 5 - 3 কত?",
+            "প্রশ্ন ৩: 20 * 10 কত?",
+            "প্রশ্ন ৪: 10 / 2 কত?",
+            "প্রশ্ন ৫: 7 + 5 কত?",
+             "প্রশ্ন ৬: বাংলাদেশের সবচেয়ে বড় শহর কোনটি?"
+    };
+    private final String[] answers = {"4", "2", "200 ", "5", "12","ঢাকা"};
 
-        while (true) {
-            System.out.println("\n=== 🎓 বাংলা কুইজ অ্যাপ ===");
-            System.out.println("১. কুইজ খেলুন");
-            System.out.println("২. স্কোর দেখুন");
-            System.out.println("৩. প্রস্থান করুন");
-            System.out.print("আপনার পছন্দ (১-৩): ");
+    private int[] scores = new int[5];
+    private int currentQuestion = 0;
+    private int totalScore = 0;
+    private String name, email;
 
-            String choice = scanner.nextLine();
+    // ✅ UI Components
+    private CardLayout cardLayout;
+    private JPanel mainPanel, homePanel, quizPanel, scorePanel;
+    private JLabel questionLabel, scoreLabel;
+    private JTextField answerField;
+    private JButton nextButton;
 
-            switch (choice) {
-                case "১":
-                case "1":
-                    playQuiz(scanner);
-                    break;
-                case "২":
-                case "2":
-                    viewScores();
-                    break;
-                case "৩":
-                case "3":
-                    System.out.println("ধন্যবাদ! আবার দেখা হবে।");
-                    scanner.close();
-                    return;
-                default:
-                    System.out.println("❌ ভুল ইনপুট, আবার চেষ্টা করুন।");
-            }
+    public ApurbaBanglaQuize() {
+        setTitle("🎓 বাংলা কুইজ অ্যাপ");
+        setSize(500, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // 🌸 বাংলা ফন্ট সেট করা
+        setBanglaFont();
+
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+
+        // 🏠 হোম প্যানেল
+        homePanel = new JPanel(new GridLayout(4, 1, 15, 15));
+        homePanel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
+
+        JLabel titleLabel = new JLabel("🎓 বাংলা কুইজ অ্যাপ", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Noto Sans Bengali", Font.BOLD, 22));
+        homePanel.add(titleLabel);
+
+        JButton startButton = new JButton("কুইজ শুরু করুন");
+        JButton viewScoresButton = new JButton("স্কোর দেখুন");
+        JButton exitButton = new JButton("প্রস্থান করুন");
+
+        homePanel.add(startButton);
+        homePanel.add(viewScoresButton);
+        homePanel.add(exitButton);
+
+        // 🧩 কুইজ প্যানেল
+        quizPanel = new JPanel(new BorderLayout(15, 15));
+        quizPanel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
+
+        questionLabel = new JLabel("", SwingConstants.CENTER);
+        questionLabel.setFont(new Font("Noto Sans Bengali", Font.PLAIN, 18));
+
+        answerField = new JTextField();
+        nextButton = new JButton("পরবর্তী প্রশ্ন ▶");
+
+        quizPanel.add(questionLabel, BorderLayout.NORTH);
+        quizPanel.add(answerField, BorderLayout.CENTER);
+        quizPanel.add(nextButton, BorderLayout.SOUTH);
+
+        // 🏁 স্কোর প্যানেল
+        scorePanel = new JPanel(new BorderLayout(15, 15));
+        scorePanel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
+
+        scoreLabel = new JLabel("আপনার স্কোর:", SwingConstants.CENTER);
+        scoreLabel.setFont(new Font("Noto Sans Bengali", Font.BOLD, 20));
+
+        JButton backButton = new JButton("🏠 হোমে ফিরুন");
+
+        scorePanel.add(scoreLabel, BorderLayout.CENTER);
+        scorePanel.add(backButton, BorderLayout.SOUTH);
+
+        // Add panels to main panel
+        mainPanel.add(homePanel, "Home");
+        mainPanel.add(quizPanel, "Quiz");
+        mainPanel.add(scorePanel, "Score");
+
+        add(mainPanel);
+
+        // 🔘 Button Actions
+        startButton.addActionListener(e -> startQuiz());
+        nextButton.addActionListener(e -> nextQuestion());
+        viewScoresButton.addActionListener(e -> viewScores());
+        exitButton.addActionListener(e -> System.exit(0));
+        backButton.addActionListener(e -> cardLayout.show(mainPanel, "Home"));
+
+        cardLayout.show(mainPanel, "Home");
+    }
+
+    // 🌸 বাংলা ফন্ট কনফিগারেশন
+    private void setBanglaFont() {
+        try {
+            Font banglaFont = new Font("Noto Sans Bengali", Font.PLAIN, 16);
+            UIManager.put("Label.font", banglaFont);
+            UIManager.put("Button.font", banglaFont);
+            UIManager.put("TextField.font", banglaFont);
+            UIManager.put("OptionPane.messageFont", banglaFont);
+            UIManager.put("OptionPane.buttonFont", banglaFont);
+        } catch (Exception e) {
+            // যদি Noto Sans Bengali না থাকে, fallback দাও
+            UIManager.put("Label.font", new Font("Vrinda", Font.PLAIN, 16));
+            UIManager.put("Button.font", new Font("Vrinda", Font.PLAIN, 16));
         }
     }
 
-    private static void playQuiz(Scanner scanner) {
-        System.out.println("\nলগইন করুন:");
-        System.out.print("নাম: ");
-        String name = scanner.nextLine();
-        System.out.print("ইমেইল: ");
-        String email = scanner.nextLine();
+    // ▶️ কুইজ শুরু করা
+    private void startQuiz() {
+        name = JOptionPane.showInputDialog(this, "নাম লিখুন:");
+        if (name == null || name.isEmpty()) return;
 
-        String[] questions = {
-                "প্রশ্ন ১: 2 + 2 কত?",
-                "প্রশ্ন ২: 5 - 3 কত?",
-                "প্রশ্ন ৩: 3 * 3 কত?",
-                "প্রশ্ন ৪: 10 / 2 কত?",
-                "প্রশ্ন ৫: 7 + 5 কত?"
-        };
+        email = JOptionPane.showInputDialog(this, "ইমেইল লিখুন:");
+        if (email == null || email.isEmpty()) return;
 
-        String[] answers = {"4", "2", "9", "5", "12"};
+        currentQuestion = 0;
+        totalScore = 0;
+        scores = new int[5];
 
-        int[] scores = new int[5];
-        int totalScore = 0;
-
-        for (int i = 0; i < questions.length; i++) {
-            System.out.println(questions[i]);
-            System.out.print("আপনার উত্তর: ");
-            String userAnswer = scanner.nextLine();
-
-            if (userAnswer.equals(answers[i])) {
-                System.out.println("✅ সঠিক উত্তর!");
-                scores[i] = 1;
-                totalScore++;
-            } else {
-                System.out.println("❌ ভুল উত্তর! সঠিক উত্তর ছিল: " + answers[i]);
-                scores[i] = 0;
-            }
-            System.out.println();
-        }
-
-        System.out.println("আপনার মোট স্কোর: " + totalScore + " / 5");
-        saveScore(name, email, scores, totalScore);
+        showQuestion();
+        cardLayout.show(mainPanel, "Quiz");
     }
 
-    private static void saveScore(String name, String email, int[] scores, int total) {
+    // 📄 প্রশ্ন দেখানো
+    private void showQuestion() {
+        if (currentQuestion < questions.length) {
+            questionLabel.setText(questions[currentQuestion]);
+            answerField.setText("");
+        }
+    }
+
+    // ⏭️ পরবর্তী প্রশ্ন
+    private void nextQuestion() {
+        String userAnswer = answerField.getText().trim();
+        if (userAnswer.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "অনুগ্রহ করে উত্তর লিখুন।");
+            return;
+        }
+
+        if (userAnswer.equals(answers[currentQuestion])) {
+            JOptionPane.showMessageDialog(this, "✅ সঠিক উত্তর!");
+            scores[currentQuestion] = 1;
+            totalScore++;
+        } else {
+            JOptionPane.showMessageDialog(this, "❌ ভুল উত্তর! সঠিক উত্তর ছিল: " + answers[currentQuestion]);
+            scores[currentQuestion] = 0;
+        }
+
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else {
+            saveScore();
+            scoreLabel.setText("আপনার মোট স্কোর: " + totalScore + " / 5");
+            cardLayout.show(mainPanel, "Score");
+        }
+    }
+
+    // 💾 স্কোর ডাটাবেজে সংরক্ষণ
+    private void saveScore() {
         String sql = "INSERT INTO scores (name, email, q1, q2, q3, q4, q5, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -90,40 +184,51 @@ public class QuizApplication {
             for (int i = 0; i < 5; i++) {
                 pstmt.setInt(3 + i, scores[i]);
             }
-            pstmt.setInt(8, total);
+            pstmt.setInt(8, totalScore);
             pstmt.executeUpdate();
 
-            System.out.println("🎯 স্কোর সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে।");
+            JOptionPane.showMessageDialog(this, "🎯 স্কোর সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে।");
 
         } catch (SQLException e) {
-            System.out.println("⚠️ ডাটাবেস ত্রুটি: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "⚠️ ডাটাবেস ত্রুটি: " + e.getMessage());
         }
     }
 
-    private static void viewScores() {
+    // 🧾 স্কোর দেখা
+    private void viewScores() {
+        StringBuilder results = new StringBuilder();
         String sql = "SELECT * FROM scores";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
-            System.out.println("\n=== 🧾 সংরক্ষিত স্কোর তালিকা ===");
             while (rs.next()) {
-                System.out.println("নাম: " + rs.getString("name"));
-                System.out.println("ইমেইল: " + rs.getString("email"));
-                System.out.println(
-                        "Q1: " + rs.getInt("q1") +
-                        " | Q2: " + rs.getInt("q2") +
-                        " | Q3: " + rs.getInt("q3") +
-                        " | Q4: " + rs.getInt("q4") +
-                        " | Q5: " + rs.getInt("q5")
-                );
-                System.out.println("মোট স্কোর: " + rs.getInt("total"));
-                System.out.println("----------------------------");
+                results.append("নাম: ").append(rs.getString("name")).append("\n");
+                results.append("ইমেইল: ").append(rs.getString("email")).append("\n");
+                results.append("Q1: ").append(rs.getInt("q1"))
+                        .append(" | Q2: ").append(rs.getInt("q2"))
+                        .append(" | Q3: ").append(rs.getInt("q3"))
+                        .append(" | Q4: ").append(rs.getInt("q4"))
+                        .append(" | Q5: ").append(rs.getInt("q5")).append("\n");
+                results.append("মোট স্কোর: ").append(rs.getInt("total")).append("\n");
+                results.append("-----------------------------\n");
             }
 
+            JTextArea textArea = new JTextArea(results.toString());
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 300));
+
+            JOptionPane.showMessageDialog(this, scrollPane, "🧾 সংরক্ষিত স্কোর তালিকা", JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException e) {
-            System.out.println("⚠️ ডাটাবেস ত্রুটি: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "⚠️ ডাটাবেস ত্রুটি: " + e.getMessage());
         }
+    }
+
+    // 🏁 Main Method
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ApurbaBanglaQuize().setVisible(true));
     }
 }
