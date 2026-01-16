@@ -1,9 +1,8 @@
 ## 🔗 Submission Links
 
-| বিষয় | লিংক |
-|-------|------|
+| বিষয় | লিংক 
 | 📦 **GitHub Project Repository** | [https://github.com/apurbaroyy/BanglaQuizApp](https://github.com/apurbaroyy/BanglaQuizApp) |
-| 🌍 **Outsourcing Profile (Upwork)** | [https://www.upwork.com/nx/create-profile/skills](https://www.upwork.com/nx/create-profile/skills) |
+
 | 💼 **LinkedIn Profile** | [https://www.linkedin.com/in/apurba-chandra-roy-046976300/](https://www.linkedin.com/in/apurba-chandra-roy-046976300/) |
 
 ### 👨‍💻 Developer Information
